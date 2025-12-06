@@ -1,0 +1,77 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-header">
+      <i class="ri-building-line login-icon"></i>
+      <h1 class="login-title">Conjunto Santander</h1>
+      <p class="login-subtitle">Panel Administrativo</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="login-form">
+      <div class="form-group">
+        <label for="usuario_admin" class="form-label">
+          <i class="ri-user-line"></i> Usuario
+        </label>
+        <input
+          type="text"
+          id="usuario_admin"
+          name="usuario_admin"
+          [(ngModel)]="credentials.usuario_admin"
+          class="form-input"
+          placeholder="Ingrese su usuario"
+          [disabled]="isLoading"
+          required
+          autocomplete="username"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="contra_admin" class="form-label">
+          <i class="ri-lock-line"></i> Contraseña
+        </label>
+        <div class="password-input-wrapper">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            id="contra_admin"
+            name="contra_admin"
+            [(ngModel)]="credentials.contra_admin"
+            class="form-input"
+            placeholder="Ingrese su contraseña"
+            [disabled]="isLoading"
+            required
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="togglePasswordVisibility()"
+            [disabled]="isLoading"
+          >
+            <i [class]="showPassword ? 'ri-eye-off-line' : 'ri-eye-line'"></i>
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-error">
+        <i class="ri-error-warning-line"></i>
+        {{ errorMessage }}
+      </div>
+
+      <button
+        type="submit"
+        class="btn-login"
+        [disabled]="isLoading"
+      >
+        <span *ngIf="!isLoading">
+          <i class="ri-login-box-line"></i> Iniciar Sesión
+        </span>
+        <span *ngIf="isLoading" class="loading-spinner">
+          <i class="ri-loader-4-line spinner"></i> Iniciando sesión...
+        </span>
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <p class="footer-text">© 2025 Conjunto Santander de Artes Escénicas</p>
+    </div>
+  </div>
+</div>

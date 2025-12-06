@@ -1,0 +1,98 @@
+/* Estilos para el componente NavBar (NavBar.css) */
+
+header {
+  text-align: center;
+  position: relative;
+  padding-bottom: 20px;
+}
+
+.announcement-banner {
+  background-color: #FF0000;
+  color: #FFFFFF;
+  padding: 15px 0;
+  font-size: 12px;
+}
+
+.logo-title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.logo-title img.logo-grande {
+  height: 55px;
+  width: auto;
+}
+
+nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  padding: 0;
+}
+
+nav ul li {
+  margin: 0 15px;
+}
+
+nav ul li a {
+  text-decoration: none;
+  color: #000000;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+nav ul li a:hover {
+  color: #FF0000;
+}
+
+.expresiones-image {
+  margin-left: 20px;
+}
+
+.expresiones-image img {
+  height: 40px;
+  width: auto;
+  transition: transform 0.3s ease;
+}
+
+.expresiones-image img:hover {
+  transform: scale(1.05);
+}
+
+.search-icon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 20px;
+  color: #000000;
+  cursor: pointer;
+}
+
+.red-divider {
+  height: 2px;
+  background-color: #FF0000;
+  width: 100%;
+  margin: 0 auto 20px;
+}
+
+/* Media query para hacer la navegación responsive */
+@media (max-width: 768px) {
+  nav ul {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  nav ul li {
+    margin: 10px 0;
+  }
+}

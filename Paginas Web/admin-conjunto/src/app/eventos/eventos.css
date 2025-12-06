@@ -1,0 +1,75 @@
+/* Contenedor principal */
+.eventos-container {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Tarjetas de Eventos */
+.evento-card {
+    background-color: #ffffff;
+    border-radius: 12px; /* Bordes más redondeados */
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid rgba(0,0,0,0.05); /* Borde sutil */
+}
+
+.evento-card:hover {
+    transform: translateY(-5px); /* Elevación al pasar el mouse */
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+    border-color: rgba(13, 110, 253, 0.2); /* Borde azulito al hover */
+}
+
+/* Títulos y Textos */
+.card-title {
+    font-size: 1.25rem; /* Título más grande */
+    letter-spacing: -0.5px;
+}
+
+.card-text {
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Grid Interno de Datos */
+.bg-light.rounded-3 {
+    background-color: #f8f9fa !important;
+    border: 1px solid #e9ecef;
+}
+
+.border-dashed {
+    border-style: dashed !important;
+    border-color: #dee2e6 !important;
+}
+
+/* Botones */
+.btn-group .btn {
+    border-radius: 6px; /* Botones un poco menos redondos para seriedad */
+}
+
+/* Toast en la esquina */
+.app-toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 2000;
+    min-width: 300px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+/* Scrollbar personalizada para el filtro si es muy largo */
+.sticky-top {
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+}
+
+/* Ajustes Responsivos */
+@media (max-width: 992px) {
+    .sticky-top {
+        position: static !important; /* En móviles el filtro deja de ser sticky */
+        z-index: 1;
+    }
+}

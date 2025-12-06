@@ -1,0 +1,37 @@
+.card {
+    border-radius: 12px;
+    border: none;
+}
+
+.vr {
+    width: 1px;
+    background-color: #dee2e6;
+    height: 40px;
+}
+
+input[type="time"] {
+    cursor: pointer;
+}
+
+.form-select {
+    cursor: pointer;
+}
+
+.progress {
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.progress-bar {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* Animación de entrada */
+.animate__fadeInRight {
+    animation-duration: 0.4s;
+}

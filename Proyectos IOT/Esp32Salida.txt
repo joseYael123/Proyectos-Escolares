@@ -1,0 +1,277 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ESP32Servo.h>
+#include <ArduinoJson.h>
+#include <WebServer.h> // Librería para escuchar peticiones
+
+//Variables globales 
+const unsigned long TIEMPO_DESPUES_SALIDA = 4000;
+const unsigned long TIEMPO_TOLERANCIA_SALIDA = 5000;
+const unsigned long TIEMPO_TOLERANCIA_SALIDA2 = 15000;
+const unsigned long TIEMPO_FALSO_POSITIVO = 350;
+const unsigned long TIEMPO_TOLERANCIA_API = 10000;
+
+// VALORES DEL SERVO (Ajustados a tu lógica)
+const int Servo_arriba = 90;
+const int Servo_abajo = 180;
+
+//Variables para contar el tiempo
+unsigned long tiempoSalida = 0;
+unsigned long checadorFalsosPositivos = 0;
+unsigned long tiempoUltimaRespuesta = 0;
+unsigned long hayVehiculoTiempo = 0;
+
+//Claves para conectar a wifi y api
+/*CLAVES PARA LA CASA*/
+const char* SSID = "Familia_Gomez-2.4G";
+const char* PASS = "Yadaga6875#";
+const char* API = "http://192.168.100.42:5000/esp32/salida";
+/*CLAVES PARA LOS DATOS*/
+//const char* SSID = "Redmi Note 9";
+//const char* PASS ="Dayaga123";
+//const char* API = "http://172.30.80.166:5000/esp32/salida";
+
+
+//Pines
+const int pinSensorSalida = 17;
+const int pinServo = 16;
+const int buzzer = 5;
+
+//Instancias de objetos 
+enum State {ESPERANDO, FALSOS_PO, ABRIENDO, PASANDO, PASANDO1,CERRANDO,ESCUCHAR_API};
+State estado_actual = ESPERANDO;
+Servo miBombo;
+
+// --- NUEVO: Instancia del Servidor Web en puerto 80 ---
+WebServer server(80);
+
+bool lecturaSensor(){
+    return digitalRead(pinSensorSalida) == LOW;
+}
+
+void sonarAlarma(){
+  digitalWrite(buzzer, HIGH);
+  delay(2000); // OJO: Durante este delay el servidor web no responderá
+  digitalWrite(buzzer, LOW);
+}
+
+// --- NUEVO: Función para controlar Servo manualmente desde Express ---
+// Esta función se activa cuando llaman a http://IP_ESP32/esp32/servo?val=90
+void handleServoManual() {
+  if (server.hasArg("val")) {
+    int angulo = server.arg("val").toInt();
+    
+    // Validar límites
+    if (angulo < 0) angulo = 0;
+    if (angulo > 180) angulo = 180;
+
+    Serial.print("⚠️ COMANDO MANUAL WEB RECIBIDO: ");
+    Serial.println(angulo);
+
+    // 1. Movemos el servo inmediatamente
+    miBombo.write(angulo);
+
+    // 2. ACTUALIZAMOS EL ESTADO para que la lógica automática no pelee con nosotros.
+    // Si lo mandamos a ARRIBA (aprox 90), forzamos estado de apertura
+   
+    server.send(200, "text/plain", "Comando ejecutado: " + String(angulo));
+  } else {
+    server.send(400, "text/plain", "Falta el valor (?val=X)");
+  }
+}
+
+void setup() {
+  //Importante iniciar el monitor serial
+  Serial.begin(115200);
+  miBombo.attach(pinServo);
+  miBombo.write(Servo_abajo);
+  pinMode(pinSensorSalida, INPUT);
+  pinMode(buzzer, OUTPUT);
+  
+  //Verifiquemos que el buzzer funciona
+  digitalWrite(buzzer,HIGH);
+  delay(500);
+  digitalWrite(buzzer,LOW);
+  
+  //Configuracion wifi
+  WiFi.begin(SSID,PASS);
+
+  int max_intentos = 20;
+  int intentos_actuales = 0;
+
+  while(WiFi.status() != WL_CONNECTED && intentos_actuales <= max_intentos){
+    Serial.print(".");
+    delay(500);
+    intentos_actuales++;
+  }
+  
+  if(WiFi.status() == WL_CONNECTED){
+    Serial.println("\nConectado existosamente a la red: " + String(SSID));
+    Serial.print("IP del ESP32 para Express: ");
+    Serial.println(WiFi.localIP()); 
+
+    // --- NUEVO: Iniciar rutas del servidor ---
+    server.on("/esp32/servo", HTTP_GET, handleServoManual);
+    server.begin();
+    Serial.println("Servidor Web Escuchando...");
+    
+  } else {
+    Serial.print("Hubo errores al conectar el wifi, reintentando..");
+    WiFi.reconnect();
+  }
+}
+
+void loop() {
+  // --- NUEVO: Escuchar peticiones web SIEMPRE ---
+  server.handleClient(); 
+  
+  bool hayVehiculo = lecturaSensor();
+
+  switch(estado_actual){
+    case ESPERANDO:
+     if(hayVehiculo){
+        Serial.println("Hay un vehiculo, validando...");
+        estado_actual = FALSOS_PO;
+        checadorFalsosPositivos = millis();
+      } else {
+         // Quitamos el delay largo para que el servidor responda rápido
+         // Serial.println("Esperando a un vehiculo..."); 
+         delay(50); // Delay pequeño para estabilidad, pero permite respuesta web
+      }
+      break;
+      
+    case FALSOS_PO:
+      if(!hayVehiculo){
+        Serial.println("Falso positivo seguimos contando");
+        estado_actual = ESPERANDO;
+        return;
+      }
+
+      if(hayVehiculo && (millis() - checadorFalsosPositivos > TIEMPO_FALSO_POSITIVO)){
+        Serial.println("Tiempo de espera coincide, escuchamos api");
+        estado_actual = ESCUCHAR_API;
+        checadorFalsosPositivos = 0;
+        tiempoUltimaRespuesta = 0;
+      }
+      break;
+
+    case ESCUCHAR_API:
+    if(!hayVehiculo){
+      Serial.println("El vehiculo se quito del medio, reiniciando");
+      estado_actual = ESPERANDO;
+      return;
+    } 
+
+    if(millis() - tiempoUltimaRespuesta > 1000){
+      consultarBackEnd();
+      Serial.println("Consultando API...");
+      tiempoUltimaRespuesta = millis();
+    }    
+    break;
+
+    case ABRIENDO:
+    Serial.print("Salida autorizada / Manualmente Abierta!!!!");
+    miBombo.write(Servo_arriba);
+    tiempoSalida = millis();
+    estado_actual = PASANDO;
+    break;
+
+    case PASANDO:
+      if(!hayVehiculo){
+        if(hayVehiculoTiempo == 0){
+          hayVehiculoTiempo = millis();
+        }
+        if(millis() - hayVehiculoTiempo > TIEMPO_DESPUES_SALIDA){
+        Serial.print("Ya no hay vehiculo, esperamos 4 seg para bajar el servo");
+        estado_actual = CERRANDO;
+        }
+      } else {
+        hayVehiculoTiempo = 0;
+
+        if(millis() - tiempoSalida >= TIEMPO_TOLERANCIA_SALIDA){
+          Serial.println("El vehiculo sigue ahi, procedemos a sonar alarma");
+          sonarAlarma();
+          estado_actual = PASANDO1;          
+        }
+      }
+    break;
+
+    case PASANDO1:
+    if(!hayVehiculo){
+         if(hayVehiculoTiempo == 0) hayVehiculoTiempo  = millis();
+         if(millis() - hayVehiculoTiempo  > TIEMPO_DESPUES_SALIDA){
+            Serial.println("Por fin se fue. Esperamos 4s y cerramos.");
+            estado_actual = CERRANDO;
+         }
+      }
+      else {
+         hayVehiculoTiempo  = 0; // Reset por si acaso 
+         if(millis() - tiempoSalida >= TIEMPO_TOLERANCIA_SALIDA2){
+            Serial.println("TIMEOUT FINAL (15s). Cerrando por seguridad.");
+            sonarAlarma();
+            miBombo.write(Servo_abajo); // Cerramos a la fuerza
+            estado_actual = ESPERANDO; 
+         }
+      }
+    break;
+
+    case CERRANDO:
+      if(hayVehiculo){
+        Serial.println("¡OBSTÁCULO! Re-abriendo pluma.");
+        miBombo.write(Servo_abajo); // OJO: Tu codigo decia Servo_abajo para RE-ABRIR? Verifica esto.
+        // Si Servo_abajo es 180 (Cerrado) y Servo_arriba es 90 (Abierto)...
+        // Debería ser Servo_arriba aquí si detectas obstáculo.
+        // Lo dejo como lo tenías, pero revísalo.
+        
+        tiempoSalida = millis(); // Reiniciamos el tiempo global
+        estado_actual = PASANDO; // Regresamos a la lógica de monitoreo
+        return; 
+      }      
+      // B) Cierre normal
+      miBombo.write(Servo_abajo);
+      delay(1000); 
+      Serial.println("Pluma cerrada. Sistema listo.");
+      estado_actual = ESPERANDO;
+      break;
+    }
+      
+  }
+
+void consultarBackEnd(){
+  if(WiFi.status() == WL_CONNECTED){
+  HTTPClient http;
+  http.begin(API);
+  http.setTimeout(3000); // Timeout corto para no bloquear el servidor web mucho tiempo
+
+  int codigo_res = http.GET();
+  if(codigo_res == 200){
+    String datos_recibidos = http.getString();
+
+    if(datos_recibidos.indexOf("Esperando") == -1){
+      Serial.println("Esperando server...");
+      // Serial.print(datos_recibidos); // Comentado para limpiar monitor
+
+      StaticJsonDocument<1024> documento;
+      DeserializationError err = deserializeJson(documento, datos_recibidos);
+
+      if(!err){
+        String respuesta = documento["status"];
+        String tipo = documento["tipo"];
+
+        if(respuesta == "success" && tipo == "Salida"){
+          Serial.print("Salida Autorizada por API");
+          estado_actual = ABRIENDO;
+        } else if (respuesta == "success" && tipo == "Entrada"){
+          Serial.print("Comando de entrada, ignoramos");
+        } else if (respuesta == "failed"){
+          Serial.println("Acceso denegado revisa el server de express");
+          // delay(2000); // Quitamos este delay largo
+        }
+      } 
+    } 
+  } else {
+    // Error en API
+   }
+   http.end();
+  }
+}

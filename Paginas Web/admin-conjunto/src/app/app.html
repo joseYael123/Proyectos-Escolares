@@ -1,0 +1,115 @@
+<!--=============== HEADER ===============-->
+<header class="dropdown-header" *ngIf="isAuthenticated">
+  <nav class="dropdown-nav dropdown-container">
+    <div class="dropdown-nav__data">
+      <a routerLink="/home" class="dropdown-nav__logo" [class.logistica-theme]="isLogistica">
+        <i class="ri-building-line"></i> Conjunto Santander 
+        <span class="role-badge" *ngIf="isLogistica">Logística</span>
+        <span class="role-badge admin-badge" *ngIf="isSuperAdmin">Admin</span>
+      </a>
+      
+      <div class="dropdown-nav__toggle" id="nav-toggle" (click)="toggleMenu()">
+        <i class="ri-menu-line dropdown-nav__burger" [class.hidden]="showMenu"></i>
+        <i class="ri-close-line dropdown-nav__close" [class.hidden]="!showMenu"></i>
+      </div>
+    </div>
+
+    <div class="dropdown-nav__menu" id="nav-menu" [class.show-menu]="showMenu">
+      <ul class="dropdown-nav__list">
+        
+        <!-- 1. EVENTOS (Para ambos) -->
+        <li *ngIf="isSuperAdmin || isLogistica">
+          <a routerLink="/eventos/revisar" class="dropdown-nav__link" (click)="closeDropdowns()">Eventos</a>
+        </li>
+
+        <!-- 2. ASIGNACIONES (Para ambos) -->
+        <li *ngIf="isSuperAdmin || isLogistica">
+          <a routerLink="/asignacion" class="dropdown-nav__link" (click)="closeDropdowns()">Asignar Espacios</a>
+        </li>
+
+        <!-- 3. RESPONSABLES (SOLO PARA LOGÍSTICA EN EL NAVBAR) -->
+        <!-- Se muestra si es Logística y NO es Super Admin, para que no se duplique -->
+        <li *ngIf="isLogistica && !isSuperAdmin">
+          <a routerLink="/responsable" class="dropdown-nav__link" (click)="closeDropdowns()">
+             <i class="ri-user-star-line"></i> Responsables
+          </a>
+        </li>
+
+        <!-- 4. FORMULARIOS (SOLO SUPER ADMIN) -->
+        <li class="dropdown__item" [class.show-dropdown]="activeDropdown === 'formularios'" *ngIf="isSuperAdmin">
+          <div class="dropdown-nav__link" (click)="toggleDropdown('formularios')">
+            Formularios <i class="ri-arrow-down-s-line dropdown__arrow"></i>
+          </div>
+
+          <ul class="dropdown__menu">
+            <li>
+              <a routerLink="/admin/crear" class="dropdown__link" (click)="closeDropdowns()">
+                <i class="ri-admin-line"></i> Admin Formulario
+              </a>                          
+            </li>
+            <li>
+              <a routerLink="/guardia/crear" class="dropdown__link" (click)="closeDropdowns()">
+                <i class="ri-shield-user-line"></i> Guardia Formulario
+              </a>
+            </li>
+            <li>
+              <a routerLink="/responsable/crear" class="dropdown__link" (click)="closeDropdowns()">
+                <i class="ri-user-add-line"></i> Responsable Formulario
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- 5. TABLAS (SOLO SUPER ADMIN) -->
+        <li class="dropdown__item" [class.show-dropdown]="activeDropdown === 'tablas'" *ngIf="isSuperAdmin">
+          <div class="dropdown-nav__link" (click)="toggleDropdown('tablas')">
+            Tablas <i class="ri-arrow-down-s-line dropdown__arrow"></i>
+          </div>
+
+          <ul class="dropdown__menu">
+            <li>
+              <a routerLink="/admin" class="dropdown__link" (click)="closeDropdowns()">
+                <i class="ri-admin-line"></i> Admins
+              </a>                          
+            </li>
+            <li>
+              <a routerLink="/guardia" class="dropdown__link" (click)="closeDropdowns()">
+                <i class="ri-shield-user-line"></i> Guardias
+              </a>
+            </li>
+            <li>
+              <a routerLink="/evento" class="dropdown__link" (click)="closeDropdowns()">
+                <i class="ri-calendar-event-line"></i> Eventos
+              </a>
+            </li>
+            <!-- AQUI ESTÁ LA TABLA DE RESPONSABLES PARA EL ADMIN -->
+            <li>
+              <a routerLink="/responsable" class="dropdown__link" (click)="closeDropdowns()">
+                 <i class="ri-user-star-line"></i> Responsables
+              </a>
+            </li>
+          </ul>
+        </li>
+        
+        <!-- 6. USUARIO Y LOGOUT -->
+        <li class="dropdown__item" [class.show-dropdown]="activeDropdown === 'usuario'">
+          <div class="dropdown-nav__link" (click)="toggleDropdown('usuario')">
+            <i class="ri-user-line"></i> {{ currentUser?.nom_admin }} <i class="ri-arrow-down-s-line dropdown__arrow"></i>
+          </div>
+
+          <ul class="dropdown__menu">
+            <li>
+              <a href="#" class="dropdown__link" (click)="logout()">
+                <i class="ri-logout-box-line"></i> Cerrar Sesión
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</header>
+
+<main class="main-content">
+  <router-outlet></router-outlet>
+</main>

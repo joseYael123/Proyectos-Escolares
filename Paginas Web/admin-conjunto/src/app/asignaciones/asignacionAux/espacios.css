@@ -1,0 +1,151 @@
+/* =========================================
+   LAYOUT
+   ========================================= */
+.parking-grid {
+    display: grid;
+    gap: 12px;
+    padding: 15px;
+    justify-content: center;
+}
+
+.grid-lot-1 {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.grid-lot-2 {
+    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+}
+
+/* =========================================
+   TARJETA
+   ========================================= */
+.parking-spot {
+    aspect-ratio: 1/1;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    cursor: default;
+    transition: all 0.2s ease;
+    position: relative;
+    user-select: none;
+}
+
+.spot-number {
+    font-weight: bold;
+    font-size: 1.1rem;
+    background-color: rgba(0,0,0,0.05);
+    width: 100%;
+    text-align: center;
+    border-radius: 4px;
+}
+
+.spot-status {
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.spot-type {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 0.7rem;
+}
+
+/* =========================================
+   ESTADOS (Colores)
+   ========================================= */
+
+/* 1. VERDE - DISPONIBLE */
+.available {
+    border-color: #198754;
+    color: #198754;
+    background-color: #f8fff9;
+    cursor: pointer;
+}
+.available:hover {
+    background-color: #198754;
+    color: white;
+    transform: translateY(-3px);
+}
+
+/* 2. ROJO CLARO - ASIGNADO (Liberable) */
+.occupied {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+    color: #dc3545;
+    cursor: pointer; 
+}
+.occupied:hover {
+    background-color: #dc3545;
+    color: white;
+    transform: translateY(-3px);
+}
+
+/* 3. NEGRO/GRIS OSCURO - INHABILITADO POR BD (Mantenimiento) */
+.disabled-bd {
+    border-color: #343a40;
+    background-color: #343a40;
+    color: #fff;
+    cursor: not-allowed;
+    opacity: 0.85;
+}
+.disabled-bd .spot-number {
+    background-color: #212529;
+    color: #fff;
+}
+
+/* 4. GRIS CLARO - RESERVADO SISTEMA (32-40) */
+.system-reserved {
+    border-color: #6c757d;
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* 5. BLOQUEADO POR CUPO (Verde apagado) */
+.blocked {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(100%);
+}
+.blocked:hover {
+    transform: none;
+    background-color: #f8fff9; 
+    color: #198754;
+}
+
+/* =========================================
+   OTROS
+   ========================================= */
+.box-legend {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    display: inline-block;
+}
+.box-legend.bg-dark {
+    background-color: #343a40 !important;
+}
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+}
+.modal {
+    z-index: 1055;
+}

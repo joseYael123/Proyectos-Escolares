@@ -1,0 +1,263 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include "esp32-hal-ledc.h"
+#include <esp_now.h>
+#include "time.h"
+#include <WebServer.h>
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
+
+// ————— CREDENCIALES CASA—————
+const char* SSID = "Familia_Gomez-2.4G";
+const char* PASS = "Yadaga6875#";
+const char* API_URL = "http://192.168.100.42:5000/esp32/obtener";
+// ————— CREDENCIALES DATOS—————
+//const char* SSID = "Redmi Note 9";
+//const char* PASS = "Dayaga123";
+//const char* API_URL = "http://172.30.80.166:5000/esp32/obtener";
+
+// ————— CONFIG ESP-NOW —————
+uint8_t mac_camara[] = {0xC0, 0xCD, 0xD6, 0xC9, 0xF6, 0xCC}; 
+
+typedef struct mensaje_struct {
+  int comando;
+} mensaje_struct;
+
+mensaje_struct datosEnvio;
+esp_now_peer_info_t peerInfo;
+
+// ————— PINES —————
+const int pinLedInfra    = 12; 
+const int pinSensorInfra = 32; 
+const int pinServo       = 14; 
+const int pinRojo = 27; const int pinAzul = 26; const int pinVerde = 25; 
+
+// ————— CONFIGURACIÓN SERVO —————
+const int SERVO_FREQ = 50;
+const int SERVO_RES  = 14;
+const int ANGULO_CERRADO = 140; 
+const int ANGULO_ABIERTO = 55;  
+
+WebServer server(80);
+
+// ————— TIEMPOS —————
+const unsigned long TIEMPO_OBJETIVO         = 11000; 
+const unsigned long TIEMPO_TOLERANCIA_HUECO = 1500;  
+const unsigned long TIMEOUT_SERVER          = 15000; 
+const unsigned long TIEMPO_SEGURIDAD_SALIDA = 4000;  
+
+// ————— GLOBALES —————
+volatile bool triggerCamara = false;
+volatile bool sistemaOcupado = false; 
+unsigned long inicioEsperaServer = 0; 
+bool servidorIniciado = false; // Bandera para saber si ya prendimos el server
+
+// ————— PROTOTIPOS —————
+void moverServo(int grados);
+
+// ————— HELPERS —————
+void led_rgb(int r, int g, int b) {
+    analogWrite(pinRojo, r); analogWrite(pinVerde, g); analogWrite(pinAzul, b);
+}
+
+void OnDataSent(const wifi_tx_info_t *tx_info, esp_now_send_status_t status) {
+}
+
+void handleServoManual() {
+  if (server.hasArg("val")) {
+    int angulo = server.arg("val").toInt();
+    Serial.printf("\n[WEB] Comando Manual Recibido: %d grados\n", angulo);
+    
+    moverServo(angulo);
+    
+    if (abs(angulo - ANGULO_ABIERTO) < 10) {
+       led_rgb(0, 255, 0);
+       delay(500);
+       led_rgb(0,0,0);   
+       Serial.println("[WEB] MODO MANUAL (Abierto)");
+    } 
+    else if (abs(angulo - ANGULO_CERRADO) < 10) {
+       led_rgb(0, 255, 0);
+       delay(500);
+       led_rgb(0,0,0);
+       Serial.println("[WEB] MODO AUTOMATICO (Cerrado)");
+    }
+    server.send(200, "text/plain", "OK");
+  } else {
+    server.send(400, "text/plain", "Falta valor");
+  }
+}
+
+void moverServo(int grados) {
+    int duty = map(grados, 0, 180, 410, 2050); 
+    ledcWrite(pinServo, duty);
+}
+
+bool lecturaRaw() {
+    ledcWrite(pinLedInfra, 127); delay(10);
+    int lectura = digitalRead(pinSensorInfra);
+    ledcWrite(pinLedInfra, 0);   return (lectura == HIGH);
+}
+
+bool validarObstaculo() {
+    if (lecturaRaw()) { delay(5); if (lecturaRaw()) { delay(5); if (lecturaRaw()) return true; } }
+    return false;
+}
+
+// ————— TAREA DE RED (AQUI ESTABA EL ERROR) —————
+void TaskNetwork(void *pvParameters) {
+    vTaskDelay(2000 / portTICK_PERIOD_MS);
+    
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(SSID, PASS);
+    while (WiFi.status() != WL_CONNECTED) vTaskDelay(500 / portTICK_PERIOD_MS);
+    
+    Serial.println("\n[Net] WiFi CONECTADO");
+    Serial.print("IP: "); Serial.println(WiFi.localIP());
+
+    // ———— CORRECCIÓN: INICIAR SERVER AQUI, CUANDO YA HAY WIFI ————
+    server.on("/esp32/servo", HTTP_GET, handleServoManual);
+    server.begin();
+    servidorIniciado = true; // Avisamos al loop que ya puede escuchar
+    Serial.println("[Net] Servidor Web Iniciado Correctamente");
+    // —————————————————————————————————————————————————————————————
+
+    if (esp_now_init() == ESP_OK) {
+        esp_now_register_send_cb(OnDataSent);
+        memcpy(peerInfo.peer_addr, mac_camara, 6);
+        peerInfo.channel = WiFi.channel(); 
+        peerInfo.encrypt = false;
+        esp_now_add_peer(&peerInfo);
+    }
+
+    for (;;) {
+        // ... (TU LÓGICA DE CÁMARA IGUAL QUE ANTES) ...
+        if (sistemaOcupado && triggerCamara == false && (millis() - inicioEsperaServer > TIMEOUT_SERVER)) {
+             Serial.println("\n>>> [TIMEOUT] CÁMARA sin respuesta.");
+             led_rgb(255, 0, 255); 
+             moverServo(ANGULO_CERRADO); 
+             vTaskDelay(2000 / portTICK_PERIOD_MS);
+             sistemaOcupado = false; 
+             led_rgb(0,0,0);
+        }
+
+        if (triggerCamara) {
+             Serial.println("\n[Proceso] 📸 11s -> CÁMARA...");
+             datosEnvio.comando = 1;
+             esp_now_send(mac_camara, (uint8_t *) &datosEnvio, sizeof(datosEnvio));
+             triggerCamara = false; sistemaOcupado = true; 
+             inicioEsperaServer = millis(); led_rgb(0, 0, 255); 
+        }
+
+        if (WiFi.status() == WL_CONNECTED) {
+            HTTPClient http;
+            http.begin(API_URL);
+            http.setTimeout(3000);
+            if(sistemaOcupado) Serial.print("."); 
+            int code = http.GET();
+            
+            if (code == 200) {
+                String payload = http.getString();
+                if (payload.indexOf("Esperando") == -1 && payload.length() > 5) {
+                     StaticJsonDocument<1024> doc;
+                     DeserializationError error = deserializeJson(doc, payload);
+                     if (!error) {
+                         String status = doc["status"];
+                         if (status == "success") {
+                             Serial.println(">>> ¡AUTORIZADO!");
+                             sistemaOcupado = true; 
+                             led_rgb(0, 255, 0); moverServo(ANGULO_ABIERTO); 
+                             vTaskDelay(3000 / portTICK_PERIOD_MS);
+                             
+                             unsigned long tiempoApertura = millis();
+                             bool cocheDebajo = true;
+                             while (true) {
+                                 unsigned long t = millis() - tiempoApertura;
+                                 cocheDebajo = validarObstaculo(); 
+                                 if (t < 10000) {
+                                     led_rgb(0, 255, 0); 
+                                     if (!cocheDebajo) { Serial.println(">>> Coche cruzó."); vTaskDelay(TIEMPO_SEGURIDAD_SALIDA / portTICK_PERIOD_MS); break; }
+                                 } else if (t < 20000) {
+                                     if ((t / 500) % 2 == 0) led_rgb(255, 255, 0); else led_rgb(0,0,0);
+                                     if (!cocheDebajo) { Serial.println(">>> Coche cruzó (Tardío)."); vTaskDelay(TIEMPO_SEGURIDAD_SALIDA / portTICK_PERIOD_MS); break; }
+                                 } else {
+                                     Serial.println(">>> [TIMEOUT PASO] Cierre."); led_rgb(255, 0, 0); vTaskDelay(1000 / portTICK_PERIOD_MS); break;
+                                 }
+                                 vTaskDelay(100 / portTICK_PERIOD_MS); 
+                             }
+                             moverServo(ANGULO_CERRADO); sistemaOcupado = false; led_rgb(0,0,0);
+                         } else if (status == "failed") {
+                             Serial.println(">>> DENEGADO");
+                             led_rgb(255, 0, 0); vTaskDelay(2000 / portTICK_PERIOD_MS); sistemaOcupado = false; led_rgb(0,0,0);
+                         }
+                     }
+                }
+            }
+            http.end();
+        } 
+        
+        if (WiFi.status() != WL_CONNECTED) WiFi.reconnect();
+        vTaskDelay(1000 / portTICK_PERIOD_MS); 
+    }
+}
+
+// ————— SETUP —————
+void setup() {
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0); 
+    Serial.begin(115200);
+    
+    ledcAttach(pinLedInfra, 38000, 8); ledcWrite(pinLedInfra, 0); 
+    ledcAttach(pinServo, SERVO_FREQ, SERVO_RES);
+    moverServo(ANGULO_CERRADO); 
+    
+    pinMode(pinSensorInfra, INPUT);
+    pinMode(pinRojo, OUTPUT); pinMode(pinVerde, OUTPUT); pinMode(pinAzul, OUTPUT);
+
+    // OJO: YA NO INICIAMOS EL SERVER AQUÍ, LO HACE LA TAREA DE RED CUANDO HAYA WIFI
+    
+    Serial.println("--- SISTEMA V10.1 (Fix Assert Failed) ---");
+    xTaskCreatePinnedToCore(TaskNetwork, "NetTask", 10000, NULL, 1, NULL, 0);
+}
+
+// ————— LOOP —————
+void loop() {
+    // Solo atendemos clientes si el servidor ya inició exitosamente en la otra tarea
+    if(servidorIniciado) {
+        server.handleClient(); 
+    }
+
+    static unsigned long tiempoInicioDeteccion = 0;
+    static unsigned long ultimoMomentoVisto = 0;
+    static bool detectandoActualmente = false;
+
+    if (!sistemaOcupado && detectandoActualmente && (millis() - ultimoMomentoVisto > 5000)) {
+        detectandoActualmente = false; tiempoInicioDeteccion = 0;
+    }
+
+    if (!sistemaOcupado) {
+        bool sensorBloqueado = validarObstaculo();
+        if (sensorBloqueado) {
+            ultimoMomentoVisto = millis(); 
+            if (!detectandoActualmente) {
+                detectandoActualmente = true; tiempoInicioDeteccion = millis();
+                Serial.println("\n[Sensor] Vehículo detectado.");
+            } else {
+                unsigned long duracion = millis() - tiempoInicioDeteccion;
+                if (duracion >= TIEMPO_OBJETIVO) {
+                    triggerCamara = true; detectandoActualmente = false; tiempoInicioDeteccion = 0;
+                }
+            }
+        } else {
+            if (detectandoActualmente) {
+                unsigned long tiempoPerdido = millis() - ultimoMomentoVisto;
+                if (tiempoPerdido > TIEMPO_TOLERANCIA_HUECO) {
+                    Serial.println("[Sensor] Reset."); detectandoActualmente = false; tiempoInicioDeteccion = 0; led_rgb(0,0,0);
+                }
+            }
+        }
+        delay(50); 
+    } else {
+        detectandoActualmente = false; tiempoInicioDeteccion = 0; delay(20); 
+    }
+}

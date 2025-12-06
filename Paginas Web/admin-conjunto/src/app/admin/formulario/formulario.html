@@ -1,0 +1,205 @@
+<div class="container-fluid py-4" style="background: #f5f7fa; min-height: 100vh;">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+      <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+        <div class="card-header text-white" style="background: #2c3e50; padding: 1.5rem; border: none;">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <h3 class="mb-1 fw-bold">
+                <i class="fas fa-user-plus me-2"></i> Nuevo Administrador
+              </h3>
+              <p class="mb-0 small opacity-75">Completa los datos para crear un nuevo usuario administrador</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-4">
+          <form (ngSubmit)="agregarAdmin()" #adminForm="ngForm">
+            
+            <!-- Información Personal -->
+            <div class="mb-4">
+              <h6 class="text-secondary mb-3 fw-semibold">
+                <i class="fas fa-user-circle me-2"></i> Información Personal
+              </h6>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-muted">
+                    Nombre <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="nuevoAdmin.nom_admin"
+                    name="nom_admin"
+                    placeholder="Juan"
+                    required
+                    style="border-radius: 8px;"
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-muted">
+                    Apellido Paterno <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="nuevoAdmin.app_admin"
+                    name="app_admin"
+                    placeholder="Pérez"
+                    required
+                    style="border-radius: 8px;"
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-muted">
+                    Apellido Materno
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="nuevoAdmin.apm_admin"
+                    name="apm_admin"
+                    placeholder="García"
+                    style="border-radius: 8px;"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Contacto y Cuenta -->
+            <div class="mb-4">
+              <h6 class="text-secondary mb-3 fw-semibold">
+                <i class="fas fa-envelope me-2"></i> Contacto y Cuenta
+              </h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-muted">
+                    Correo Electrónico <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    [(ngModel)]="nuevoAdmin.correo"
+                    name="correo"
+                    placeholder="ejemplo@conjunto.com"
+                    required
+                    style="border-radius: 8px;"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-muted">
+                    Usuario <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="nuevoAdmin.usuario_admin"
+                    name="usuario_admin"
+                    placeholder="jperez"
+                    required
+                    style="border-radius: 8px;"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Seguridad -->
+            <div class="mb-4">
+              <h6 class="text-secondary mb-3 fw-semibold">
+                <i class="fas fa-lock me-2"></i> Seguridad
+              </h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-muted">
+                    Contraseña <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    [(ngModel)]="nuevoAdmin.contra_admin"
+                    name="contra_admin"
+                    placeholder="••••••••"
+                    required
+                    style="border-radius: 8px;"
+                  />
+                  <small class="text-muted">Mínimo 6 caracteres</small>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-muted">
+                    Rol <span class="text-danger">*</span>
+                  </label>
+                  <select
+                    class="form-select"
+                    [(ngModel)]="nuevoAdmin.rol"
+                    name="rol"
+                    required
+                    style="border-radius: 8px;"
+                  >
+                    <option value="super_admin">Super Admin - Acceso Total</option>
+                    <option value="logistica">Logística - Acceso Limitado</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Imagen de Perfil -->
+            <div class="mb-4">
+              <h6 class="text-secondary mb-3 fw-semibold">
+                <i class="fas fa-image me-2"></i> Imagen de Perfil
+              </h6>
+              <div class="row">
+                <div class="col-12">
+                  <label class="form-label small fw-semibold text-muted">
+                    Seleccionar Foto (opcional)
+                  </label>
+                  <input
+                    type="file"
+                    class="form-control"
+                    (change)="onFileSelected($event)"
+                    accept="image/*"
+                    name="imagen_file"
+                    style="border-radius: 8px;"
+                  />
+                  <small class="text-muted d-block mt-1">
+                    Formatos: JPG, PNG, GIF, WEBP - Tamaño máximo: 2MB
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Botones de Acción -->
+            <div class="row g-3">
+              <div class="col-md-6">
+                <button 
+                  type="submit" 
+                  class="btn btn-primary btn-lg w-100"
+                  [disabled]="!adminForm.form.valid"
+                  style="border-radius: 8px;">
+                  <i class="fas fa-save me-2"></i> Guardar Administrador
+                </button>
+              </div>
+              <div class="col-md-6">
+                <button 
+                  type="button" 
+                  class="btn btn-outline-secondary btn-lg w-100"
+                  (click)="cancelar()"
+                  style="border-radius: 8px;">
+                  <i class="fas fa-times me-2"></i> Cancelar
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="card-footer bg-light text-center py-2">
+          <small class="text-muted">
+            <i class="fas fa-info-circle me-1"></i>
+            Los campos marcados con <span class="text-danger fw-bold">*</span> son obligatorios
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

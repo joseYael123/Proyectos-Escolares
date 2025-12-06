@@ -1,0 +1,167 @@
+<div class="container-fluid py-4" style="background: #f5f7fa; min-height: 100vh;">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+      <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+        <div class="card-header text-white" style="background: #16a085; padding: 1.5rem; border: none;">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <h3 class="mb-1 fw-bold">
+                <i class="fas fa-user-shield me-2"></i> Nuevo Guardia
+              </h3>
+              <p class="mb-0 small opacity-75">Completa los datos para crear un nuevo guardia</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-body p-4">
+          <form (ngSubmit)="agregarGuardia()" #guardiaForm="ngForm">
+            
+            <!-- Información Personal -->
+            <div class="mb-4">
+              <h6 class="text-secondary mb-3 fw-semibold">
+                <i class="fas fa-user-circle me-2"></i> Información Personal
+              </h6>
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-muted">
+                    Nombre <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="nuevoGuardia.nom_guardia"
+                    name="nom_guardia"
+                    placeholder="Carlos"
+                    required
+                    style="border-radius: 8px;"
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-muted">
+                    Apellido Paterno <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="nuevoGuardia.app_guardia"
+                    name="app_guardia"
+                    placeholder="López"
+                    required
+                    style="border-radius: 8px;"
+                  />
+                </div>
+                <div class="col-md-4">
+                  <label class="form-label small fw-semibold text-muted">
+                    Apellido Materno
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="nuevoGuardia.apm_guardia"
+                    name="apm_guardia"
+                    placeholder="Martínez"
+                    style="border-radius: 8px;"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <!-- Información de Trabajo -->
+            <div class="mb-4">
+              <h6 class="text-secondary mb-3 fw-semibold">
+                <i class="fas fa-briefcase me-2"></i> Información de Trabajo
+              </h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-muted">
+                    Número de Guardia <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    [(ngModel)]="nuevoGuardia.numero_guardia"
+                    name="numero_guardia"
+                    placeholder="001"
+                    required
+                    style="border-radius: 8px;"
+                  />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold text-muted">
+                    Contraseña <span class="text-danger">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    class="form-control"
+                    [(ngModel)]="nuevoGuardia.contra_guardia"
+                    name="contra_guardia"
+                    placeholder="••••••••"
+                    required
+                    style="border-radius: 8px;"
+                  />
+                  <small class="text-muted">Mínimo 6 caracteres</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Imagen de Perfil -->
+            <div class="mb-4">
+              <h6 class="text-secondary mb-3 fw-semibold">
+                <i class="fas fa-image me-2"></i> Imagen de Perfil
+              </h6>
+              <div class="row">
+                <div class="col-12">
+                  <label class="form-label small fw-semibold text-muted">
+                    Seleccionar Foto (opcional)
+                  </label>
+                  <input
+                    type="file"
+                    class="form-control"
+                    (change)="onFileSelected($event)"
+                    accept="image/*"
+                    name="imagen_file"
+                    style="border-radius: 8px;"
+                  />
+                  <small class="text-muted d-block mt-1">
+                    Formatos: JPG, PNG, GIF, WEBP - Tamaño máximo: 2MB
+                  </small>
+                </div>
+              </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- Botones de Acción -->
+            <div class="row g-3">
+              <div class="col-md-6">
+                <button 
+                  type="submit" 
+                  class="btn btn-success btn-lg w-100"
+                  [disabled]="!guardiaForm.form.valid"
+                  style="border-radius: 8px;">
+                  <i class="fas fa-save me-2"></i> Guardar Guardia
+                </button>
+              </div>
+              <div class="col-md-6">
+                <button 
+                  type="button" 
+                  class="btn btn-outline-secondary btn-lg w-100"
+                  (click)="cancelar()"
+                  style="border-radius: 8px;">
+                  <i class="fas fa-times me-2"></i> Cancelar
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="card-footer bg-light text-center py-2">
+          <small class="text-muted">
+            <i class="fas fa-info-circle me-1"></i>
+            Los campos marcados con <span class="text-danger fw-bold">*</span> son obligatorios
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

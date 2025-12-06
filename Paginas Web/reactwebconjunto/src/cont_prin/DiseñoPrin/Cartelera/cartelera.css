@@ -1,0 +1,147 @@
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+
+body {
+font-family: 'Montserrat', sans-serif;
+background-color: #FFFFFF;
+color: #000000;
+line-height: 1.6;
+}
+
+main {
+min-height: auto;
+overflow: visible;
+}
+
+.cartelera-container {
+max-width: 1200px;
+margin: 0 auto;
+padding: 20px;
+min-height: auto;
+}
+
+
+.section-title {
+text-align: center;
+font-size: 28px;
+font-weight: 700;
+text-transform: uppercase;
+margin: 20px 0;
+position: relative;
+padding-bottom: 10px;
+}
+
+.filter-buttons {
+display: flex;
+justify-content: center;
+flex-wrap: wrap;
+margin-bottom: 20px;
+}
+
+.filter-btn {
+background-color: #E8ECEF;
+color: #000000;
+border: none;
+padding: 8px 15px;
+border-radius: 20px;
+margin: 5px;
+font-size: 14px;
+cursor: pointer;
+transition: background-color 0.3s ease;
+}
+
+.filter-btn:hover {
+background-color: #D3D3D3;
+}
+
+.filter-btn.active {
+background-color: #D3D3D3;
+}
+
+.filter-btn.music {
+background-color: #FFC107;
+}
+
+.event-grid {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 20px;
+}
+
+@keyframes fadeInCard {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.event-card {
+border: 1px solid #E0E0E0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  opacity: 0;
+  transform: scale(1);
+  transition: transform 0.3s ease;
+}
+
+.event-card:hover{
+transform: scale(1.05);
+}
+
+.cartelera-container.cargado .event-card {
+   animation-name: fadeInCard;
+  animation-duration: 0.6s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+.cartelera-container.cargado .event-card:nth-child(1) { animation-delay: 0.1s; }
+.cartelera-container.cargado .event-card:nth-child(2) { animation-delay: 0.2s; }
+.cartelera-container.cargado .event-card:nth-child(3) { animation-delay: 0.3s; }
+.cartelera-container.cargado .event-card:nth-child(4) { animation-delay: 0.4s; }
+.cartelera-container.cargado .event-card:nth-child(5) { animation-delay: 0.5s; }
+.cartelera-container.cargado .event-card:nth-child(6) { animation-delay: 0.6s; }
+.cartelera-container.cargado .event-card:nth-child(7) { animation-delay: 0.7s; }
+.cartelera-container.cargado .event-card:nth-child(8) { animation-delay: 0.8s; }
+.cartelera-container.cargado .event-card:nth-child(9) { animation-delay: 0.9s; }
+.cartelera-container.cargado .event-card:nth-child(10) { animation-delay: 1.0s; }
+.cartelera-container.cargado .event-card:nth-child(11) { animation-delay: 1.1s; }
+.cartelera-container.cargado .event-card:nth-child(12) { animation-delay: 1.2s; }
+
+.event-card img {
+width: 100%;
+height: 200px;
+object-fit: cover;
+}
+
+.event-card h3 {
+font-size: 18px;
+font-weight: 700;
+margin: 10px 0;
+}
+
+.event-card p {
+    font-size: 14px;
+    margin-bottom: 10px;
+    padding: 0 10px; 
+}
+
+.event-card .event-tag {
+font-size: 14px;
+color: #FF0000;
+margin-bottom: 10px;
+    font-weight: bold; 
+}
+
+@media (max-width: 768px) {
+.event-grid {
+grid-template-columns: 1fr; 
+}
+}

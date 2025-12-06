@@ -1,0 +1,59 @@
+/* --- Estilos para React-Calendar --- */
+.react-calendar {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* Marca los días "llenos" en rojo */
+.dia-lleno {
+  background-color: #f8d7da !important; /* Rojo claro */
+  color: #721c24 !important;
+  border-radius: 50%;
+}
+
+/* --- NUEVO: Marca los días "parciales" en naranja/amarillo --- */
+.dia-parcial {
+  background-color: #fff3cd !important; /* Amarillo claro */
+  color: #856404 !important;
+  border-radius: 50%;
+}
+
+/* Estilo para el día seleccionado */
+.react-calendar__tile--active {
+  background: #007bff !important;
+  color: white !important;
+}
+
+/* --- Estilos para el Selector de Salas --- */
+.sala-selector-list .form-check {
+  padding: 12px 15px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.sala-selector-list .form-check:hover {
+  background-color: #f8f9fa;
+}
+
+.sala-selector-list .form-check.sala-llena {
+  background-color: #f8f9fa;
+  opacity: 0.7;
+  text-decoration: line-through;
+}
+
+.sala-selector-list .form-check-label {
+  width: 100%;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+
+.sala-selector-list .form-check-label span {
+  font-weight: 500;
+  margin-left: 15px;
+}

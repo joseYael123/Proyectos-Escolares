@@ -1,0 +1,122 @@
+<div class="container mt-4">
+  <div class="row">
+    <div class="col">
+      <!-- Header personalizado según rol -->
+      <div class="welcome-header" [class.logistica-theme]="isLogistica">
+        <h1 class="display-4">
+          <i class="ri-building-line"></i>
+          Bienvenido{{ currentUser && currentUser.nom_admin ? ', ' + currentUser.nom_admin : '' }}
+        </h1>
+        <p class="lead">Conjunto Santander de Artes Escénicas</p>
+        <div class="role-indicator">
+          <span class="role-badge" *ngIf="isSuperAdmin">
+            <i class="ri-shield-star-line"></i> Super Administrador
+          </span>
+          <span class="role-badge logistica-badge" *ngIf="isLogistica">
+            <i class="ri-truck-line"></i> Logística
+          </span>
+        </div>
+      </div>
+
+      <hr class="my-4">
+      
+      <!-- Panel para Super Admin -->
+      <div *ngIf="isSuperAdmin">
+        <p class="mb-4">Tienes acceso completo a todas las funcionalidades del sistema.</p>
+        
+        <div class="row mt-5">
+          <div class="col-md-3 mb-3">
+            <div class="card shadow-sm card-hover">
+              <div class="card-body text-center">
+                <i class="ri-admin-line" style="font-size: 3rem; color: #667eea;"></i>
+                <h5 class="card-title mt-3">Administradores</h5>
+                <p class="card-text">Gestiona los usuarios administrativos del sistema</p>
+                <a routerLink="/admin" class="btn btn-admin mt-2">
+                  <i class="ri-table-line"></i> Ver Tabla
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-3 mb-3">
+            <div class="card shadow-sm card-hover">
+              <div class="card-body text-center">
+                <i class="ri-shield-user-line" style="font-size: 3rem; color: #764ba2;"></i>
+                <h5 class="card-title mt-3">Guardias</h5>
+                <p class="card-text">Administra el personal de seguridad del conjunto</p>
+                <a routerLink="/guardia" class="btn btn-admin mt-2">
+                  <i class="ri-table-line"></i> Ver Tabla
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-md-3 mb-3">
+            <div class="card shadow-sm card-hover">
+              <div class="card-body text-center">
+                <i class="ri-calendar-event-line" style="font-size: 3rem; color: #C8102E;"></i>
+                <h5 class="card-title mt-3">Eventos</h5>
+                <p class="card-text">Organiza y controla los eventos del recinto</p>
+                <a routerLink="/eventos/revisar" class="btn btn-admin mt-2">
+                  <i class="ri-eye-line"></i> Revisar
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3 mb-3">
+            <div class="card shadow-sm card-hover">
+              <div class="card-body text-center">
+                <i class="ri-map-pin-line" style="font-size: 3rem; color: #48bb78;"></i>
+                <h5 class="card-title mt-3">Asignaciones</h5>
+                <p class="card-text">Gestiona espacios y horarios para eventos</p>
+                <a routerLink="/asignacion" class="btn btn-admin mt-2">
+                  <i class="ri-pencil-line"></i> Asignar
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel para Logística -->
+      <div *ngIf="isLogistica">
+        <p class="mb-4">Gestiona eventos y asignaciones de espacios del conjunto.</p>
+        
+        <div class="row mt-5">
+          <div class="col-md-6 mb-3">
+            <div class="card shadow-sm card-hover logistica-card">
+              <div class="card-body text-center">
+                <i class="ri-calendar-event-line" style="font-size: 4rem; color: #f5576c;"></i>
+                <h5 class="card-title mt-3">Eventos</h5>
+                <p class="card-text">Revisa, aprueba y gestiona los eventos del conjunto</p>
+                <a routerLink="/eventos/revisar" class="btn btn-logistica mt-2">
+                  <i class="ri-eye-line"></i> Revisar Eventos
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <div class="card shadow-sm card-hover logistica-card">
+              <div class="card-body text-center">
+                <i class="ri-map-pin-line" style="font-size: 4rem; color: #f093fb;"></i>
+                <h5 class="card-title mt-3">Asignaciones</h5>
+                <p class="card-text">Asigna lugares y horarios para los eventos programados</p>
+                <a routerLink="/asignacion" class="btn btn-logistica mt-2">
+                  <i class="ri-pencil-line"></i> Gestionar Asignaciones
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="alert alert-info mt-4" role="alert">
+          <i class="ri-information-line"></i>
+          <strong>Nota:</strong> Como usuario de logística, tienes acceso a la gestión de eventos y asignaciones. 
+          Para acceso a otras funcionalidades, contacta al administrador del sistema.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

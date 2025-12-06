@@ -1,0 +1,35 @@
+/* Estilos para el toggle del menú móvil */
+.hidden {
+  display: none;
+}
+
+/* Asegurar que el contenido principal tenga espacio */
+.main-content {
+  padding-top: 4rem;
+  min-height: calc(100vh - 4rem);
+}
+
+/* Role badges */
+.role-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.role-badge.admin-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Logistica theme for navbar */
+.dropdown-nav__logo.logistica-theme {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+

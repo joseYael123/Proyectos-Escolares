@@ -1,0 +1,158 @@
+<div class="container-fluid py-4" style="background: #f5f7fa; min-height: 100vh;">
+  <div class="row">
+    <div class="col">
+      <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+        
+        <!-- HEADER (ROJO VIBRANTE) -->
+        <div class="card-header text-white d-flex justify-content-between align-items-center" style="background: #e74c3c; padding: 1.5rem; border: none;">
+          <h3 class="mb-0 fw-bold">
+            <i class="ri-user-2-line me-2"></i> Lista de Responsables
+          </h3>
+          <a routerLink="/responsable/crear" class="btn btn-light fw-bold text-danger shadow-sm">
+            <i class="ri-add-line me-2"></i> Crear Nuevo Responsable
+          </a>
+        </div>
+        
+        <div class="card-body p-4">
+          <!-- Loading -->
+          <div *ngIf="isLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Cargando datos...</p>
+          </div>
+
+          <!-- Formulario de Edición -->
+          <div class="row mb-4 animate__animated animate__fadeInDown" *ngIf="modoEdicion && responsableSeleccionado">
+            <div class="col">
+              <div class="card border-0 shadow-lg" style="border-radius: 10px; border-left: 4px solid #e74c3c !important;">
+                <div class="card-header bg-danger bg-opacity-10 border-0">
+                  <h6 class="mb-0 fw-semibold text-danger">
+                    <i class="ri-edit-line me-2"></i> Editando Responsable #{{ responsableSeleccionado.id_responsable }}
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <form (ngSubmit)="actualizarResponsable()">
+                    <div class="row g-3">
+                      <div class="col-md-4">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">Nombre</label>
+                          <input type="text" class="form-control" [(ngModel)]="responsableSeleccionado.nombre" name="nombre" required style="border-radius: 8px;"/>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">A. Paterno</label>
+                          <input type="text" class="form-control" [(ngModel)]="responsableSeleccionado.apellido_paterno" name="app" required style="border-radius: 8px;"/>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">A. Materno</label>
+                          <input type="text" class="form-control" [(ngModel)]="responsableSeleccionado.apellido_materno" name="apm" style="border-radius: 8px;"/>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">Teléfono</label>
+                          <input type="tel" class="form-control" [(ngModel)]="responsableSeleccionado.telefeno" name="telefono" required style="border-radius: 8px;"/>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">Correo Electrónico</label>
+                          <input type="email" class="form-control" [(ngModel)]="responsableSeleccionado.correo_electronico" name="correo" required style="border-radius: 8px;"/>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">Link Social</label>
+                          <input type="text" class="form-control" [(ngModel)]="responsableSeleccionado.link_social" name="linkSocial" style="border-radius: 8px;"/>
+                        </div>
+                      </div>
+                      <!-- ELIMINADO: Campo Estado -->
+                      <div class="col-md-6">
+                         <!-- Espacio vacío si no hay otro campo -->
+                      </div>
+                    </div>
+                    <div class="mt-4 text-end">
+                      <button type="submit" class="btn btn-success me-2" style="border-radius: 8px;">
+                        <i class="ri-save-line me-2"></i> Actualizar
+                      </button>
+                      <button 
+                        type="button" 
+                        class="btn btn-secondary"
+                        (click)="cancelarEdicion()"
+                        style="border-radius: 8px;">
+                        <i class="ri-close-line me-2"></i> Cancelar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TABLA DE RESPONSABLES -->
+          <div class="table-responsive" *ngIf="!isLoading && datos.length > 0">
+            <table class="table table-hover align-middle">
+              <thead style="background: #e74c3c; color: white;">
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre Completo</th>
+                  <th>Contacto / Correo</th>
+                  <th>Link Social</th>
+                  <th class="text-end pe-3">Acciones</th> <!-- QR y Estado ELIMINADOS -->
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let responsable of datos">
+                  <td>#{{ responsable.id_responsable }}</td>
+                  <td>
+                    <strong>{{responsable.nombre}} {{responsable.apellido_paterno}}</strong>
+                    <br><small class="text-muted">{{responsable.apellido_materno}}</small>
+                  </td>
+                  <td>
+                    <i class="ri-phone-line me-1 text-primary"></i> {{ responsable.telefeno }}
+                    <br><i class="ri-mail-line me-1 text-primary"></i> {{ responsable.correo_electronico }}
+                  </td>
+                  <td>
+                      <a [href]="responsable.link_social" target="_blank" *ngIf="responsable.link_social" class="badge bg-secondary-subtle text-decoration-none">
+                          <i class="ri-external-link-line me-1"></i> Ver Perfil
+                      </a>
+                  </td>
+                  <td class="text-end pe-3">
+                    <div class="btn-group" role="group">
+                      <button
+                        class="btn btn-sm btn-outline-primary me-2"
+                        (click)="editarResponsable(responsable)"
+                        title="Editar"
+                        style="border-radius: 6px;">
+                        <i class="ri-pencil-line"></i>
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="eliminarResponsable(responsable.id_responsable!)"
+                        title="Eliminar"
+                        style="border-radius: 6px;">
+                        <i class="ri-delete-bin-line"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- MENSAJE SIN DATOS -->
+          <div *ngIf="!isLoading && datos.length === 0" class="text-center py-4">
+            <div class="alert alert-info">
+              <i class="ri-information-line"></i>
+              No se encontraron responsables agendados.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

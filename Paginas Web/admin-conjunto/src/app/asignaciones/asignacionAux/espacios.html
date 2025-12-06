@@ -1,0 +1,142 @@
+<div class="card border-0 shadow-lg animate__animated animate__fadeInUp">
+  
+  <div class="card-header bg-white py-3 border-bottom">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div>
+        <button class="btn btn-sm btn-outline-secondary mb-2" (click)="cerrar()">
+          <i class="ri-arrow-left-line"></i> Volver
+        </button>
+        <h4 class="fw-bold text-primary mb-0">{{ evento?.nombre_evento }}</h4>
+        <small class="text-muted">
+          Fecha Gestión: <strong>{{ fechaAsignacion }}</strong>
+        </small>
+      </div>
+      
+      <div class="btn-group">
+        <button class="btn btn-outline-primary" [class.active]="idLotSeleccionado === 1" (click)="cambiarLote(1)">Lot 1</button>
+        <button class="btn btn-outline-primary" [class.active]="idLotSeleccionado === 2" (click)="cambiarLote(2)">Lot 2</button>
+      </div>
+    </div>
+
+    <div class="m-2 d-flex justify-content-end">
+      <button type="button" class="btn btn-secondary rounded" (click)="cargarDatosIniciales()"><i class="fa fa-refresh" aria-hidden="true"></i></button>
+    </div>
+
+    <!-- INDICADOR DE CUPO SIMPLE -->
+    <div class="d-flex align-items-center justify-content-between bg-light p-2 rounded border">
+        <span class="fw-bold text-secondary">Vehículos de este evento dentro:</span>
+        
+        <div class="d-flex align-items-center gap-2">
+            <h4 class="mb-0 fw-bold" 
+                [class.text-success]="totalAsignadosEvento < capacidadTotal"
+                [class.text-danger]="totalAsignadosEvento >= capacidadTotal">
+                {{ totalAsignadosEvento }} / {{ capacidadTotal }}
+            </h4>
+            
+            <span *ngIf="totalAsignadosEvento >= capacidadTotal" class="badge bg-danger">
+                <i class="ri-lock-2-fill"></i> LLENO
+            </span>
+        </div>
+    </div>
+  </div>
+
+  <div class="card-body bg-light">
+    <div *ngIf="isLoading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status"></div>
+      <p class="mt-2 text-muted">Cargando estado físico...</p>
+    </div>
+
+    <div *ngIf="!isLoading" class="parking-grid" 
+         [class.grid-lot-1]="idLotSeleccionado === 1" 
+         [class.grid-lot-2]="idLotSeleccionado === 2">
+      
+      <div *ngFor="let espacio of espaciosVisuales" 
+           class="parking-spot"
+           [class.available]="espacio.disponible"
+           
+           [class.occupied]="!espacio.disponible && espacio.id_asignacion"
+           [class.system-reserved]="espacio.esReservadoSistema"
+           
+           [class.blocked]="espacio.disponible && totalAsignadosEvento >= capacidadTotal"
+           
+           (click)="seleccionarEspacio(espacio)"
+           title="{{ espacio.disponible ? 'Asignar' : espacio.ocupadoPor }}">
+        
+        <span class="spot-number">{{ espacio.numero }}</span>
+        
+        <div class="spot-status">
+          <i class="ri-check-line" *ngIf="espacio.disponible"></i>
+          
+          <!-- Icono de Papelera para liberar -->
+          <i class="ri-delete-bin-line text-white" *ngIf="!espacio.disponible && espacio.id_asignacion"></i>
+          
+          <!-- Icono candado si es sistema -->
+          <i class="ri-lock-fill text-muted" *ngIf="espacio.esReservadoSistema"></i>
+        </div>
+
+        <small class="spot-type" *ngIf="espacio.tipo === 'Discapacitado'">♿</small>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-center gap-3 mt-4 small flex-wrap">
+      <div class="d-flex align-items-center"><span class="box-legend bg-success me-2"></span> Disponible</div>
+      <div class="d-flex align-items-center"><span class="box-legend bg-danger me-2"></span> Ocupado (Click para Liberar)</div>
+      <div class="d-flex align-items-center"><span class="box-legend bg-secondary me-2"></span> Reservado Sistema</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ASIGNAR -->
+<div *ngIf="modalConfirmarVisible" class="modal-backdrop fade show"></div>
+<div *ngIf="modalConfirmarVisible" class="modal fade show d-block" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title fs-6">Asignar Espacio #{{ espacioSeleccionado?.numero }}</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="modalConfirmarVisible = false"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="mb-3">
+          <label class="form-label fw-bold text-secondary">Vehículo:</label>
+          
+          <div *ngIf="vehiculosDisponibles.length === 0" class="alert alert-warning small">
+             <span *ngIf="todosVehiculosResponsable.length === 0">El responsable no tiene vehículos.</span>
+             <span *ngIf="todosVehiculosResponsable.length > 0">Todos sus vehículos ya tienen lugar.</span>
+          </div>
+
+          <select class="form-select" [(ngModel)]="idVehiculoSeleccionado" [disabled]="vehiculosDisponibles.length === 0">
+            <option [ngValue]="null" disabled selected>-- Selecciona vehículo --</option>
+            <option *ngFor="let v of vehiculosDisponibles" [ngValue]="v.id_vehiculo">
+              {{ v.marca }} {{ v.modelo }} - {{ v.placas }}
+            </option>
+          </select>
+        </div>
+        <div class="d-flex gap-2 justify-content-end mt-4">
+          <button class="btn btn-secondary" (click)="modalConfirmarVisible = false">Cancelar</button>
+          <button class="btn btn-success" (click)="confirmarGuardado()" [disabled]="!idVehiculoSeleccionado">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL LIBERAR -->
+<div *ngIf="modalLiberarVisible" class="modal-backdrop fade show" style="z-index: 1060;"></div>
+<div *ngIf="modalLiberarVisible" class="modal fade show d-block" tabindex="-1" style="z-index: 1070;">
+  <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-danger text-white border-0">
+        <h5 class="modal-title fs-6">Liberar Espacio</h5>
+        <button type="button" class="btn-close btn-close-white" (click)="modalLiberarVisible = false"></button>
+      </div>
+      <div class="modal-body text-center p-4">
+        <h2 class="text-danger fw-bold mb-3">{{ espacioSeleccionado?.numero }}</h2>
+        <p class="mb-4">¿Liberar este espacio? <br><small>El vehículo saldrá y el espacio quedará libre.</small></p>
+        <div class="d-grid gap-2">
+          <button class="btn btn-danger" (click)="confirmarLiberacion()">Sí, Liberar</button>
+          <button class="btn btn-outline-secondary" (click)="modalLiberarVisible = false">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

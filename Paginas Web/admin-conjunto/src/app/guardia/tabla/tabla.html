@@ -1,0 +1,187 @@
+<div class="container-fluid py-4" style="background: #f5f7fa; min-height: 100vh;">
+  <div class="row">
+    <div class="col">
+      <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+        <div class="card-header text-white d-flex justify-content-between align-items-center" style="background: #16a085; padding: 1.5rem; border: none;">
+          <h3 class="mb-0 fw-bold">
+            <i class="fas fa-user-shield me-2"></i> Guardias Registrados
+          </h3>
+          <a routerLink="/guardia/crear" class="btn btn-light">
+            <i class="fas fa-plus me-2"></i> Nuevo Guardia
+          </a>
+        </div>
+        <div class="card-body p-4">
+          <!-- Formulario de Edición -->
+          <div class="row mb-4" *ngIf="modoEdicion && guardiaSeleccionado">
+            <div class="col">
+              <div class="card border-0 shadow-sm" style="border-radius: 10px; border-left: 4px solid #ffc107 !important;">
+                <div class="card-header bg-warning bg-opacity-10 border-0">
+                  <h6 class="mb-0 fw-semibold text-dark">
+                    <i class="fas fa-edit me-2"></i> Editar Guardia
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <form (ngSubmit)="actualizarGuardia()">
+                    <div class="row g-3">
+                      <div class="col-md-4">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">Nombre</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            [(ngModel)]="guardiaSeleccionado.nom_guardia"
+                            name="nom_guardia"
+                            required
+                            style="border-radius: 8px;"
+                          />
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">Apellido Paterno</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            [(ngModel)]="guardiaSeleccionado.app_guardia"
+                            name="app_guardia"
+                            required
+                            style="border-radius: 8px;"
+                          />
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">Apellido Materno</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            [(ngModel)]="guardiaSeleccionado.apm_guardia"
+                            name="apm_guardia"
+                            style="border-radius: 8px;"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">Número de Guardia</label>
+                          <input
+                            type="text"
+                            class="form-control"
+                            [(ngModel)]="guardiaSeleccionado.numero_guardia"
+                            name="numero_guardia"
+                            required
+                            style="border-radius: 8px;"
+                          />
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">Estado</label>
+                          <select
+                            class="form-select"
+                            [(ngModel)]="guardiaSeleccionado.estado"
+                            name="estado"
+                            required
+                            style="border-radius: 8px;"
+                          >
+                            <option value="Activo">Activo</option>
+                            <option value="Inactivo">Inactivo</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <button type="submit" class="btn btn-success" style="border-radius: 8px;">
+                          <i class="fas fa-save me-2"></i> Actualizar
+                        </button>
+                        <button 
+                          type="button" 
+                          class="btn btn-secondary"
+                          (click)="cancelarEdicion()"
+                          style="border-radius: 8px;">
+                          <i class="fas fa-times me-2"></i> Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead style="background: #16a085; color: white;">
+                <tr>
+                  <th>ID</th>
+                  <th>Imagen</th>
+                  <th>Nombre Completo</th>
+                  <th>Número</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let guardia of datos">
+                  <td>{{ guardia.id_guardia }}</td>
+                  <td>
+                    <img
+                      [src]="obtenerImagenUrl(guardia)"
+                      [alt]="'Imagen de ' + guardia.nom_guardia"
+                      class="rounded-circle"
+                      width="40"
+                      height="40"
+                      style="object-fit: cover"
+                    />
+                  </td>
+                  <td>
+                    <strong>{{ guardia.nom_guardia }} {{ guardia.app_guardia }} {{ guardia.apm_guardia }}</strong>
+                  </td>
+                  <td>{{ guardia.numero_guardia }}</td>
+                  <td>
+                    <span 
+                      class="badge"
+                      [ngClass]="guardia.estado === 'Activo' ? 'bg-success' : 'bg-danger'">
+                      {{ guardia.estado }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="btn-group" role="group">
+                      <button
+                        class="btn btn-sm me-1"
+                        (click)="editarGuardia(guardia)"
+                        title="Editar"
+                        style="background: #16a085; color: white; border-radius: 6px;">
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button
+                        class="btn btn-sm"
+                        (click)="eliminarGuardia(guardia.id_guardia!)"
+                        title="Eliminar"
+                        style="background: #e74c3c; color: white; border-radius: 6px;">
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div
+            *ngIf="datos.length === 0"
+            class="text-center py-4"
+          >
+            <div class="alert alert-info">
+              <i class="fas fa-info-circle"></i>
+              No se encontraron guardias.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

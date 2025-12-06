@@ -1,0 +1,155 @@
+<div class="container-fluid py-4" style="background: #f5f7fa; min-height: 100vh;">
+  <div class="row">
+    <div class="col">
+      <div class="card shadow border-0" style="border-radius: 15px; overflow: hidden;">
+        
+        <!-- HEADER (AZUL CIELO) -->
+        <div class="card-header text-white d-flex justify-content-between align-items-center" style="background: #3498db; padding: 1.5rem; border: none;">
+          <h3 class="mb-0 fw-bold">
+            <i class="ri-calendar-event-line me-2"></i> Eventos Agendados
+          </h3>
+          <a routerLink="/guardia/crear" class="btn btn-light fw-bold text-primary shadow-sm">
+            <i class="ri-add-line me-2"></i> Agregar Nuevo Evento
+          </a>
+        </div>
+        
+        <div class="card-body p-4">
+          <!-- Loading -->
+          <div *ngIf="isLoading" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2 text-muted">Cargando datos...</p>
+          </div>
+
+          <!-- Formulario de Edición -->
+          <div class="row mb-4 animate__animated animate__fadeInDown" *ngIf="modoEdicion && eventoSeleccionado">
+            <div class="col">
+              <div class="card border-0 shadow-lg" style="border-radius: 10px; border-left: 4px solid #3498db !important;">
+                <div class="card-header bg-primary bg-opacity-10 border-0">
+                  <h6 class="mb-0 fw-semibold text-primary">
+                    <i class="ri-edit-line me-2"></i> Editando Evento #{{ eventoSeleccionado.id_evento }}
+                  </h6>
+                </div>
+                <div class="card-body">
+                  <form (ngSubmit)="actualizarEvento()">
+                    <div class="row g-3">
+                      <div class="col-md-4">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">Nombre</label>
+                          <input type="text" class="form-control" [(ngModel)]="eventoSeleccionado.nombre_evento" name="nombre_evento" required style="border-radius: 8px;"/>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">Descripción</label>
+                          <!-- CORREGIDO: Campo Descripcion -->
+                          <input type="text" class="form-control" [(ngModel)]="eventoSeleccionado.descripcion" name="descripcion" required style="border-radius: 8px;"/>
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">Categoría</label>
+                          <!-- CORREGIDO: Campo Categoria -->
+                          <input type="text" class="form-control" [(ngModel)]="eventoSeleccionado.categoria_evento" name="categoria" style="border-radius: 8px;"/>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">Tipo Admisión</label>
+                          <!-- CORREGIDO: Campo Tipo Admision -->
+                          <input type="text" class="form-control" [(ngModel)]="eventoSeleccionado.tipo_de_admision" name="tipoAdmision" required style="border-radius: 8px;"/>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label small fw-semibold text-muted">Estado</label>
+                           <!-- CORREGIDO: Campo Folio/Estado (Asumo que el segundo campo era Folio) -->
+                           <input type="text" class="form-control" [(ngModel)]="eventoSeleccionado.folio_evento" name="folio" style="border-radius: 8px;"/>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-4 text-end">
+                      <button type="submit" class="btn btn-success me-2" style="border-radius: 8px;">
+                        <i class="ri-save-line me-2"></i> Actualizar
+                      </button>
+                      <button 
+                        type="button" 
+                        class="btn btn-secondary"
+                        (click)="cancelarEdicion()"
+                        style="border-radius: 8px;">
+                        <i class="ri-close-line me-2"></i> Cancelar
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TABLA DE EVENTOS -->
+          <div class="table-responsive" *ngIf="!isLoading && datos.length > 0">
+            <table class="table table-hover align-middle">
+              <thead style="background: #3498db; color: white;">
+                <tr>
+                  <th>ID</th>
+                  <th>Nombre del evento</th>
+                  <th>Descripción</th>
+                  <th>Categoría</th>
+                  <th>Tipo Admision</th>
+                  <th>Folio</th>
+                  <th>Estado</th>
+                  <th class="text-end pe-3">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let evento of datos">
+                  <td>#{{ evento.id_evento }}</td>
+                  <td><strong>{{evento.nombre_evento}}</strong></td>
+                  <td>{{evento.descripcion}}</td>
+                  <td>{{ evento.categoria_evento }}</td>
+                  <td>{{ evento.tipo_de_admision }}</td>
+                  <td>{{ evento.folio_evento }}</td>
+                  <td>
+                    <span 
+                      class="badge"
+                      [ngClass]="getEstadoBadge(evento.estado)"
+                      >
+                      {{ evento.estado }}
+                    </span>
+                  </td>
+                  <td class="text-end pe-3">
+                    <div class="btn-group" role="group">
+                      <button
+                        class="btn btn-sm btn-outline-primary me-2"
+                        (click)="editarEvento(evento)"
+                        title="Editar"
+                        style="border-radius: 6px;">
+                        <i class="ri-pencil-line"></i>
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-danger"
+                        (click)="eliminarEvento(evento.id_evento!)"
+                        title="Eliminar"
+                        style="border-radius: 6px;">
+                        <i class="ri-delete-bin-line"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- MENSAJE SIN DATOS -->
+          <div *ngIf="!isLoading && datos.length === 0" class="text-center py-4">
+            <div class="alert alert-info">
+              <i class="ri-information-line"></i>
+              No se encontraron eventos agendados.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
